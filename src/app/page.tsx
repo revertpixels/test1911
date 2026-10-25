@@ -9,27 +9,27 @@ export default function Home() {
   const [input, setInput] = useState("");
 
   useEffect(() => {
-    const saved = localStorage.getItem("todos");
-    if (saved) setTodos(JSON.parse(saved));
+    fetch("/api/todos").then((r) => r.json()).then(setTodos);
   }, []);
 
-  useEffect(() => {
-    localStorage.setItem("todos", JSON.stringify(todos));
-  }, [todos]);
-
-  function addTodo() {
+  async function addTodo() {
     const text = input.trim();
     if (!text) return;
-    setTodos([...todos, { id: Date.now(), text, done: false }]);
+    const res = await fetch("/api/todos", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ text }) });
+    const todo = await res.json();
+    setTodos((t) => [...t, todo]);
     setInput("");
   }
 
-  function toggle(id: number) {
-    setTodos(todos.map((t) => (t.id === id ? { ...t, done: !t.done } : t)));
+  async function toggle(t: Todo) {
+    const res = await fetch("/api/todos", { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id: t.id, done: !t.done }) });
+    const updated = await res.json();
+    setTodos((list) => list.map((x) => (x.id === t.id ? updated : x)));
   }
 
-  function remove(id: number) {
-    setTodos(todos.filter((t) => t.id !== id));
+  async function remove(id: number) {
+    await fetch("/api/todos", { method: "DELETE", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id }) });
+    setTodos((list) => list.filter((x) => x.id !== id));
   }
 
   return (
@@ -44,29 +44,20 @@ export default function Home() {
             placeholder="Add a task..."
             className="flex-1 px-3 py-2 rounded-lg border border-zinc-300 dark:border-zinc-700 bg-transparent text-black dark:text-white"
           />
-          <button
-            onClick={addTodo}
-            className="px-4 py-2 rounded-lg bg-black text-white dark:bg-white dark:text-black"
-          >
+          <button onClick={addTodo} className="px-4 py-2 rounded-lg bg-black text-white dark:bg-white dark:text-black">
             Add
           </button>
         </div>
         <ul className="space-y-2">
           {todos.map((t) => (
             <li key={t.id} className="flex items-center gap-3">
-              <input type="checkbox" checked={t.done} onChange={() => toggle(t.id)} />
-              <span className={t.done ? "line-through text-zinc-400" : "text-black dark:text-white"}>
-                {t.text}
-              </span>
-              <button onClick={() => remove(t.id)} className="ml-auto text-red-500">
-                ?
-              </button>
+              <input type="checkbox" checked={t.done} onChange={() => toggle(t)} />
+              <span className={t.done ? "line-through text-zinc-400" : "text-black dark:text-white"}>{t.text}</span>
+              <button onClick={() => remove(t.id)} className="ml-auto text-red-500">?</button>
             </li>
           ))}
         </ul>
-        {todos.length === 0 && (
-          <p className="text-zinc-400 text-sm mt-4">No tasks yet.</p>
-        )}
+        {todos.length === 0 && <p className="text-zinc-400 text-sm mt-4">No tasks yet.</p>}
       </div>
     </main>
   );
