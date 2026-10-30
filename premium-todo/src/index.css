@@ -1,0 +1,28 @@
+@import "tailwindcss";
+
+:root {
+  --bg: #0b0f17;
+  --bg-elev: #121826;
+  --fg: #e6eaf2;
+  --muted: #8a93a6;
+  --accent: #6ea8fe;
+  --border: #1f2633;
+  --radius: 12px;
+}
+
+.light {
+  --bg: #f7f8fb;
+  --bg-elev: #ffffff;
+  --fg: #0b0f17;
+  --muted: #5b6475;
+  --accent: #2563eb;
+  --border: #e3e6ee;
+}
+
+body {
+  background: var(--bg);
+  color: var(--fg);
+  font-family: "Inter", system-ui, sans-serif;
+}
+
+.font-mono { font-family: "JetBrains Mono", ui-monospace, monospace; }
